@@ -11,14 +11,24 @@
     </Toolbar>
 
     <DataTable :value="formattedData">
+      <Column>
+        <template #body="slotProps">
+          <NuxtLink :to="`/users/${slotProps.data.id}`">
+            <Button label="View" link />
+          </NuxtLink>
+        </template>
+      </Column>
       <Column
         v-for="(value, key) in formattedData[0]"
+        sortable
         :key="key"
+        :field="key"
         :header="key.charAt(0).toUpperCase() + key.slice(1)"
       >
         <template #body="slotProps">
-          <span v-html="slotProps.data[key]"></span> </template
-      ></Column>
+          <span v-html="slotProps.data[key]"></span>
+        </template>
+      </Column>
     </DataTable>
   </div>
 </template>
@@ -26,6 +36,10 @@
 <script setup lang="ts">
 const { data, pending, error, refresh } = await useFetch("/api/users");
 
+// store the data in local storage to persist between navigation. NEVER DO THIS IN AN ACTUAL APP
+if (typeof window !== "undefined") {
+  window.localStorage.setItem("users", JSON.stringify(data.value.users));
+}
 const formatValue = (key: string, value: any) => {
   switch (key) {
     case "image":
@@ -47,10 +61,6 @@ const formattedData = computed(() => {
     });
   }
   return [];
-});
-
-const keys = computed(() => {
-  return data.value.users ? Object.keys(data.value.users[0]) : [];
 });
 </script>
 
